@@ -1,0 +1,291 @@
+<mat-toolbar color="primary">
+  <span>BMSY</span>
+</mat-toolbar>
+<mat-card>
+  <app-totals></app-totals>
+</mat-card>
+<mat-card>
+  <mat-accordion expanded>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <b>Power and Charging</b>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip-list cdkDropList cdkDropListOrientation="horizontal">
+          <mat-chip cdkDrag>
+            {{ getOutputSource( getInt( outputSource)) }}
+        </mat-chip>
+          <mat-chip cdkDrag>
+            {{ getChargingSource(getInt(chargingSource))}}
+          </mat-chip>
+          <mat-chip cdkDrag>
+            {{ chargingCurrent }}A
+          </mat-chip>
+          </mat-chip-list>        
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <mat-card>
+        <h4>Power the load</h4>
+        <mat-button-toggle-group name="setOutputSource" aria-label="Power the load" value="{{ outputSource }}">
+          <mat-button-toggle value="0" (change)="setOutputSource(0)">Sol/Batt/Utility</mat-button-toggle>
+          <mat-button-toggle color="warn" value="1" (change)="setOutputSource(1)">Solar First</mat-button-toggle>
+          <mat-button-toggle value="2" (change)="setOutputSource(2)">Utility First</mat-button-toggle>
+          <mat-button-toggle value="3" (change)="setOutputSource(3)">Sol/Utility/Batt</mat-button-toggle>
+        </mat-button-toggle-group>
+      </mat-card>
+      <mat-card>
+        <h3>Charging source</h3>
+        <mat-button-toggle-group name="setChargingSource" aria-label="Power the load" value="{{ chargingSource }}">
+          <mat-button-toggle value="0" (change)="setChargingSource(0)">Solar First Charging</mat-button-toggle>
+          <mat-button-toggle value="1" (change)="setChargingSource(1)">Solar and Utility</mat-button-toggle>
+          <mat-button-toggle value="2" (change)="setChargingSource(2)">Solar Only</mat-button-toggle>
+        </mat-button-toggle-group>
+      </mat-card>
+      <mat-card>
+        <h3>Charging current</h3>
+        <mat-button-toggle-group name="setChargingCurrent" aria-label="Set charging current"
+          value="{{ chargingCurrent }}">
+          <mat-button-toggle value="1" (change)="setChargingCurrent(1)">1A</mat-button-toggle>
+          <mat-button-toggle value="5" (change)="setChargingCurrent(5)">5A</mat-button-toggle>
+          <mat-button-toggle value="10" (change)="setChargingCurrent(10)">10A</mat-button-toggle>
+          <mat-button-toggle value="15" (change)="setChargingCurrent(15)">15A</mat-button-toggle>
+          <mat-button-toggle value="20" (change)="setChargingCurrent(20)">20A</mat-button-toggle>
+          <mat-button-toggle value="25" (change)="setChargingCurrent(25)">25A</mat-button-toggle>
+          <mat-button-toggle value="30" (change)="setChargingCurrent(30)">30A</mat-button-toggle>
+          <mat-button-toggle value="40" (change)="setChargingCurrent(40)">40A</mat-button-toggle>
+          <mat-button-toggle value="60" (change)="setChargingCurrent(60)">60A</mat-button-toggle>
+        </mat-button-toggle-group>
+      </mat-card>
+    </mat-expansion-panel>
+  </mat-accordion>
+  <mat-accordion multi>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <b>Voltages</b>
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip-list cdkDropList cdkDropListOrientation="horizontal">
+            <mat-chip cdkDrag>Float: {{ floatvoltage }}v 
+            </mat-chip>
+            <mat-chip cdkDrag>Bulk: {{ bulkvoltage}}v
+            </mat-chip>
+            <mat-chip cdkDrag>To Grid: {{ battlowbacktogrid }}v
+            </mat-chip>
+            <mat-chip cdkDrag>To battery: {{ backtobatt }}v
+            </mat-chip>
+            <mat-chip cdkDrag>Battery cut off: {{ battcutoff }}v
+            </mat-chip>
+            </mat-chip-list>          
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <mat-card>
+        <mat-form-field>
+          <mat-label>Float voltage</mat-label>
+          <mat-select value="{{ floatvoltage }}" [(ngModel)]="floatvoltage">
+            <mat-option *ngFor="let val of getNumbers(46,58)" value="{{val}}">{{val}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <a (click)="onFloatSet()" mat-button color="primary">Set</a>
+        <mat-form-field>
+          <mat-label>Bulk voltage</mat-label>
+          <mat-select value="{{ bulkvoltage}}" [(ngModel)]="bulkvoltage">
+            <mat-option *ngFor="let val of getNumbers(46,58)" value="{{val}}">{{val}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <a (click)="onBulkSet()" mat-button color="primary">Set</a>
+        <mat-form-field>
+          <mat-label>Back to grid</mat-label>
+          <mat-select value="{{ battlowbacktogrid }}" [(ngModel)]="battlowbacktogrid">
+            <mat-option *ngFor="let val of getNumbers(46,58)" value="{{val}}">{{val}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <a (click)="onbackToGridSet()" mat-button color="primary">Set</a>
+        <mat-form-field>
+          <mat-label>Back to battery</mat-label>
+          <mat-select value="{{ backtobatt }}" [(ngModel)]="backtobatt">
+            <mat-option *ngFor="let val of getNumbers(46,58)" value="{{val}}">{{val}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <a (click)="onbackToBattSet()" mat-button color="primary">Set</a>
+        <mat-form-field>
+          <mat-label>Battery cut off</mat-label>
+          <mat-select value="{{ battcutoff }}" [(ngModel)]="battcutoff">
+            <mat-option *ngFor="let val of getNumbers(40,48)" value="{{val}}">{{val}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <a (click)="onbattCutOffSet()" mat-button color="primary">Set</a>
+      </mat-card>
+    </mat-expansion-panel>
+  </mat-accordion>
+  <mat-accordion *ngFor="let inverter of growatts; trackBy:trackByIdentity"
+    [class.selected]="inverter === selectedGrowatt" (click)="onSelectInverter(inverter)" multi>
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title><b>Inverter: {{inverter.inverterName}}</b></mat-panel-title>
+        <mat-panel-description>
+          <mat-chip cdkDrag> {{ fuckUnderscores( getStatus( inverter )) }}
+          </mat-chip>         
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <mat-card>
+        <table>
+          <tr>
+            <td class="tdname">Overall load</td>
+            <td class="tdvalue"> {{inverter.loadInWatts}} Watt</td>
+          </tr>
+          <tr>
+            <td class="tdname">PV</td>
+            <td class="tdvalue"> {{inverter.pvVoltage}} Volt</td>
+          </tr>
+          <tr>
+            <td class="tdname">PV</td>
+            <td class="tdvalue"> {{inverter.pvPowerInWatts}} Watt </td>
+          </tr>
+          <tr>
+            <td class="tdname">Temperature</td>
+            <td class="tdvalue"> {{inverter.temperature}} C</td>
+          </tr>
+          <tr>
+            <td class="tdname">Grid load</td>
+            <td class="tdvalue"> {{inverter.loadInWatts}} Watt</td>
+          </tr>
+          <tr>
+            <td class="tdname">Stressed</td>
+            <td class="tdvalue"> {{inverter.loadPercentage}}%</td>
+          </tr>
+          <tr>
+            <td class="tdname">Battery load</td>
+            <td class="tdvalue"> {{inverter.batteryLoadInWatts}} Watt</td>
+          </tr>
+          <tr>
+            <td class="tdname">Battery voltage</td>
+            <td class="tdvalue"> {{inverter.batteryVoltage}} Volt</td>
+          </tr>
+          <tr>
+            <td class="tdname">Bulk charge voltage</td>
+            <td class="tdvalue"> {{inverter.bulkVoltage}} Volt</td>
+          </tr>
+          <tr>
+            <td class="tdname">Float charge voltage</td>
+            <td class="tdvalue"> {{inverter.floatVoltage}} Volt</td>
+          </tr>
+          <tr>
+            <td class="tdname">Battery back to Grid voltage</td>
+            <td class="tdvalue"> {{inverter.batteryLowBackToGrid}} Volt</td>
+          </tr>
+          <tr>
+            <td class="tdname">Output source</td>
+            <td class="tdvalue"> {{ getOutputSource(inverter.outputSource) }} </td>
+          </tr>
+          <tr>
+            <td class="tdname">Charging source</td>
+            <td class="tdvalue"> {{ getChargingSource( inverter.chargingSource) }}</td>
+          </tr>
+          <tr>
+            <td class="tdname">Charging current</td>
+            <td class="tdvalue"> {{inverter.chargingCurrentInAmps}} Ampere</td>
+          </tr>
+          <tr>
+            <td class="tdname">PV generated last 24hr</td>
+            <td class="tdvalue"> {{inverter.solarGenerationLast24hrInkWh}} kWh</td>
+          </tr>
+          <tr>
+            <td class="tdname">Battery charged by Grid last 24hr</td>
+            <td class="tdvalue"> {{inverter.gridChargeInKwhToBatteryLast24Hr}} kWh</td>
+          </tr>
+          <tr>
+            <td class="tdname">Battery used last 24hr</td>
+            <td class="tdvalue"> {{inverter.batteryKwhDischargedLast24Hr}} kWh</td>
+          </tr>
+          <tr>
+            <td class="tdname">Grid used last 24hr</td>
+            <td class="tdvalue"> {{inverter.gridKwhDischargedLast24Hr}} kWh</td>
+          </tr>
+        </table>
+      </mat-card>
+    </mat-expansion-panel>
+  </mat-accordion>
+
+  <mat-accordion *ngFor="let battery of bmses; trackBy:tracBMSkByIdentity" [class.selected]="battery === selectedBMS" (click)="onSelectBMS(battery)" multi>
+
+
+    <mat-expansion-panel>
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <b>BMS: {{ battery.bmsName }}</b> 
+        </mat-panel-title>
+        <mat-panel-description>
+          <mat-chip-list cdkDropList cdkDropListOrientation="horizontal">
+            <mat-chip cdkDrag> Voltage: {{ battery.voltage }}v
+            </mat-chip>
+            <mat-chip cdkDrag>Current: {{ battery.current }}A
+            </mat-chip>
+            <mat-chip cdkDrag>Temperature: {{ battery.temperatures[0] }}C
+            </mat-chip>
+          </mat-chip-list>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+      <mat-card>
+        <mat-grid-list cols="2">
+          <mat-grid-tile>
+            <table>
+              <tr>
+                <td class="tdname"> Voltage</td>
+                <td class="tdvalue"> {{ battery.voltage }}v </td>
+              </tr>
+              <tr>
+                <td class="tdname"> Current</td>
+                <td class="tdvalue"> {{ battery.current }}A </td>
+              </tr>
+              <tr>
+                <td class="tdname"> SOC</td>
+                <td class="tdvalue"> {{ battery.soc }}% </td>
+              </tr>
+              <tr>
+                <td class="tdname"> ProtectionState</td>
+                <td class="tdvalue"> {{ battery.protectionState }} </td>
+              </tr>
+              <tr>
+                <td class="tdname"> Cycles</td>
+                <td class="tdvalue"> {{ battery.cycles }} </td>
+              </tr>
+              <tr *ngFor="let temp of battery.temperatures;  let i = index">
+                <td class="tdname"> Temperature Probe {{(i+1)}}</td>
+                <td class="tdvalue"> {{ temp }}C </td>
+              </tr>
+              <tr>
+                <td class="tdname"> Lowest cell</td>
+                <td class="tdvalue"> {{ battery.cellLow }}v </td>
+              </tr>
+              <tr>
+                <td class="tdname"> Highest cell</td>
+                <td class="tdvalue"> {{ battery.cellHigh }}v </td>
+              </tr>
+              <tr>
+                <td class="tdname"> Cell spread</td>
+                <td class="tdvalue"> {{ battery.cellDifference }}v </td>
+              </tr>
+              <tr>
+                <td class="tdname"> Average cell</td>
+                <td class="tdvalue"> {{ battery.cellAverage }}v </td>
+              </tr>
+            </table>
+          </mat-grid-tile>
+          <mat-grid-tile>
+            <table>
+              <tr>
+                <td colspan=2>Individual Cells</td>
+              </tr>
+              <tr *ngFor="let cell of battery.cellVoltages; let i = index">
+                <td>Cell {{ (i+1)}}</td>
+                <td> <b>{{ cell }}v</b></td>
+              </tr>
+            </table>
+          </mat-grid-tile>
+        </mat-grid-list>
+      </mat-card>
+    </mat-expansion-panel>
+  </mat-accordion>
+</mat-card>

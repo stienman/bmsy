@@ -1,0 +1,28 @@
+
+<mat-chip-list cdkDropList cdkDropListOrientation="horizontal">
+    <mat-chip cdkDrag>
+        <mat-icon>wb_sunny</mat-icon>{{ getOptiLabel( pvPowerInWatts)}}
+    </mat-chip>
+    <mat-chip cdkDrag>
+        <mat-icon>home</mat-icon>{{getOptiLabel(  loadInWatts )}}
+    </mat-chip>
+    <mat-chip cdkDrag>
+        <mat-icon>power</mat-icon>{{getOptiLabel( gridLoadInWatts) }} 
+    </mat-chip>
+        
+    <mat-chip cdkDrag>
+        <mat-icon>battery_full</mat-icon>{{totalBattery}} Wh
+    </mat-chip>
+
+    
+
+
+    <mat-chip cdkDrag *ngFor="let soc of batterySOC;  let i = index">
+        <mat-icon>battery_full</mat-icon> {{soc}}%
+    </mat-chip>
+
+
+    <mat-chip cdkDrag>
+        <mat-icon>battery_charging_full</mat-icon>{{getOptiLabel( batteryACChargeInWatts)}}
+    </mat-chip>
+</mat-chip-list>
