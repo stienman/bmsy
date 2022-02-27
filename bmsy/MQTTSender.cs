@@ -94,6 +94,9 @@ public class MQTTSender
             totalGridKwhDischargedLast24Hr += inverter.GridKwhDischargedLast24Hr;
             totalBatteryKwhDischargedLast24Hr += inverter.BatteryKwhDischargedLast24Hr;
 
+
+            
+
             Publish($"{MQTTMAINTOPIC}/{inverter.InverterName}/BatteryLoadInWatts", inverter.BatteryLoadInWatts);
             Publish($"{MQTTMAINTOPIC}/{inverter.InverterName}/BatteryLowBackToGrid", inverter.BatteryLowBackToGrid);
             Publish($"{MQTTMAINTOPIC}/{inverter.InverterName}/BatteryVoltage", inverter.BatteryVoltage);
@@ -128,13 +131,23 @@ public class MQTTSender
         Publish($"{MQTTMAINTOPIC}/{MQTTTOTALSTOPIC}/BatteryDischargedLast24HrInkWh", Math.Round(totalBatteryKwhDischargedLast24Hr,2));
         Publish($"{MQTTMAINTOPIC}/{MQTTTOTALSTOPIC}/SolarGenerationLast24hrInkWh", Math.Round(totalSolarGenerationLast24hrInkWh,2));
         Publish($"{MQTTMAINTOPIC}/{MQTTTOTALSTOPIC}/TotalACCharge", Math.Round(totalAcCharge, 2));
+
+
+        acCharge = totalAcCharge;
+        LoadsinWatts = totalLoadInWatts;
     }
+
+
+    
 
     internal void PublishBMSInformation(IBMS bms, IBMSInfo bmsInfo)
     {
         Publish($"{MQTTMAINTOPIC}/BMS/{bms.Name}/Voltage", bmsInfo.Voltage);
         Publish($"{MQTTMAINTOPIC}/BMS/{bms.Name}/Current", bmsInfo.Current);
-        Publish($"{MQTTMAINTOPIC}/BMS/{bms.Name}/Watts", Math.Round(bmsInfo.Current * bmsInfo.Voltage, 0));
+
+        double totalWatts = Math.Round(bmsInfo.Current * bmsInfo.Voltage, 0);
+
+        Publish($"{MQTTMAINTOPIC}/BMS/{bms.Name}/Watts", totalWatts);
         Publish($"{MQTTMAINTOPIC}/BMS/{bms.Name}/SOC", bmsInfo.SOC);
         Publish($"{MQTTMAINTOPIC}/BMS/{bms.Name}/ProtectionState", bmsInfo.ProtectionState);
         Publish($"{MQTTMAINTOPIC}/BMS/{bms.Name}/Cycles", bmsInfo.Cycles);
@@ -148,6 +161,28 @@ public class MQTTSender
 
         for (int i = 0; i < bmsInfo.CellVoltages.Length; i++)
             Publish($"{MQTTMAINTOPIC}/BMS/{bms.Name}/CELLS/Cell{i}", bmsInfo.CellVoltages[i]);
+
+        CalculateDCtoACLoss(totalWatts);
+        CalculateACtoDCLoss(totalWatts);
+    }
+
+    double LoadsinWatts = 0;
+    double acCharge = 0;
+    private void CalculateDCtoACLoss(double totalWatts)
+    {
+        totalWatts = totalWatts / -1;
+        double loss = totalWatts - LoadsinWatts;
+        if (loss > 0) // There has to be a loss.
+            Publish($"{MQTTMAINTOPIC}/{MQTTTOTALSTOPIC}/DCtoACPctLoss", Math.Round(((loss / totalWatts) * 100), 2));
+        // Console.WriteLine($"DC ->AC Loss : {loss} watt");
+    }
+
+    private void CalculateACtoDCLoss(double totalWatts)
+    {
+        double loss = acCharge - totalWatts;
+        if (loss > 0 && acCharge>1) // There has to be a loss and we have to be actually charging or it's not going to make sense.
+            Publish($"{MQTTMAINTOPIC}/{MQTTTOTALSTOPIC}/ACtoDCPctLoss", Math.Round(((loss / acCharge) * 100), 2));
+        // Console.WriteLine($"AC ->DC Loss : {loss} watt");
     }
 
     internal void PublishOnTotalsTopic(string topic, int watts)
