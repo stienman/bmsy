@@ -16,7 +16,7 @@ public class Log
     public void Error(string msg)
     {
         writeLine(LogToFile($"[{DateTime.Now.ToLongTimeString()}] (error)   {msg}"), ConsoleColor.Red);
-        Orchestrator.instance.SendToMQTT("ERROR", msg);
+        MqttPublisher.Instance.Publish("ERROR", msg);
     }
 
     private string LogToFile(string msg)

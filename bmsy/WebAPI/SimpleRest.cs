@@ -61,11 +61,13 @@ public class SimpleRest
         app.MapGet("/GetOutputSource", GetOutputSource);
         app.MapGet("/GetBatterySOC/{bmsName}", GetBatterySOC);
         app.MapGet("/GetBatteryVoltage", GetBatteryVoltage);
-        app.MapGet("/GetInputRegister/{inputRegisterNr}", GetInputRegister);
-        app.MapGet("/GetHoldingRegister/{holdingRegisterNr}", GetHoldingRegister);
-        app.MapGet("/GetAllHoldingRegisters", GetAllHoldingRegisters);
-        app.MapGet("/GetAllInputRegisters", GetAllInputRegisters);
         app.MapGet("/GetCellVoltages", GetCellVoltages);
+
+        //app.MapGet("/GetInputRegister/{inputRegisterNr}", GetInputRegister);
+        //app.MapGet("/GetHoldingRegister/{holdingRegisterNr}", GetHoldingRegister);
+        //app.MapGet("/GetAllHoldingRegisters", GetAllHoldingRegisters);
+        //app.MapGet("/GetAllInputRegisters", GetAllInputRegisters);
+
     }
     string SetDateTimeOnInverter()
     {
@@ -121,14 +123,7 @@ public class SimpleRest
         return Orchestrator.instance.GetBMSStatuses();
     }
 
-    List<RegisterEntry> GetAllHoldingRegisters()
-    {
-        return Orchestrator.instance.GetAllHoldingRegistryEntries();
-    }
-    List<RegisterEntry> GetAllInputRegisters()
-    {
-        return Orchestrator.instance.GetAllInputRegistryEntries();
-    }
+
     string SetPolling(int state)
     {
         Log.instance.Information($"REST: Polling {(state==1 ? "activated": "disabled") }");
@@ -172,17 +167,7 @@ public class SimpleRest
         }
     }
 
-    List<string> GetInputRegister(int inputRegisterNr)
-    {
-        //Log.Logger.Information($"REST: Reading InputRegister {inputRegisterNr}");
-        return Orchestrator.instance.GetInputRegister(inputRegisterNr);
-    }
 
-    List<string> GetHoldingRegister(int holdingRegisterNr)
-    {
-        //Log.Logger.Information($"REST: Reading HoldingRegister {holdingRegisterNr}");
-        return Orchestrator.instance.GetHoldingRegister(holdingRegisterNr);
-    }
 
     internal List<Tuple<string, string>> GetCellVoltages(string bmsName)
     {
@@ -230,5 +215,28 @@ public class SimpleRest
     }
 
     public string Error() { return "Error!"; }
+
+
+    #region Abandoned code 
+    //List<RegisterEntry> GetAllHoldingRegisters()
+    //{
+    //    return Orchestrator.instance.GetAllHoldingRegistryEntries();
+    //}
+    //List<RegisterEntry> GetAllInputRegisters()
+    //{
+    //    return Orchestrator.instance.GetAllInputRegistryEntries();
+    //}
+    //List<string> GetInputRegister(int inputRegisterNr)
+    //{
+    //    //Log.Logger.Information($"REST: Reading InputRegister {inputRegisterNr}");
+    //    return Orchestrator.instance.GetInputRegister(inputRegisterNr);
+    //}
+
+    //List<string> GetHoldingRegister(int holdingRegisterNr)
+    //{
+    //    //Log.Logger.Information($"REST: Reading HoldingRegister {holdingRegisterNr}");
+    //    return Orchestrator.instance.GetHoldingRegister(holdingRegisterNr);
+    //}
+    #endregion
 
 }
