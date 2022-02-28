@@ -39,7 +39,6 @@ public class Log
     
     public void Pulse()
     {        
-        char outchar = (char)0x2588;
         lock (semaphore)
         {
             color = color > 14 ? 0 : color + 1;

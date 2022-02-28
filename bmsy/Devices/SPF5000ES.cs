@@ -231,7 +231,6 @@ public class SPF5000ES : IInverter
             {
                 modbusClient.ConnectedChanged -= ModbusClient_ConnectedChanged;
                 modbusClient.Disconnect();
-                modbusClient = null;
             }
             disposedValue = true;
         }

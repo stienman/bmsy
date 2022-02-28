@@ -10,7 +10,7 @@ public class JBDRS485 : IBMS
     byte startByte = 0xDD;
     private bool disposedValue;
 
-    public event BMSDataReceivedEventHandler BMSDataReceived;
+    public event BMSDataReceivedEventHandler? BMSDataReceived;
 
     protected virtual void RaiseEvent()
     {

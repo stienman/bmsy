@@ -35,9 +35,11 @@ public class SimpleRest
     private static async Task HandleException(HttpContext context)
     {
         var exceptionHandlerPathFeature = context.Features.Get<IExceptionHandlerPathFeature>();
-        var exception = exceptionHandlerPathFeature.Error;
+        string exceptionMessge = string.Empty;
+        if (exceptionHandlerPathFeature != null)
+            exceptionMessge = exceptionHandlerPathFeature.Error.Message;
         context.Response.ContentType = "application/json";
-        await context.Response.WriteAsync(JsonConvert.SerializeObject(new { error = exception.Message }));
+        await context.Response.WriteAsync(JsonConvert.SerializeObject(new { error = exceptionMessge }));
     }
 
     private void MapMethods(WebApplication app)
@@ -108,7 +110,7 @@ public class SimpleRest
         return "OK";
     }
 
-    IBMSInfo GetBatteryStatus(string bmsName)
+    IBMSInfo? GetBatteryStatus(string bmsName)
     {
         return Orchestrator.instance.GetBatteryStatus(bmsName);
     }

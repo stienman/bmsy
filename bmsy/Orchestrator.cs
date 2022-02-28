@@ -100,7 +100,7 @@ public class Orchestrator
         else return 0;
     }
 
-    private IBMSInfo GetBMSInfo(string bmsName)
+    private IBMSInfo? GetBMSInfo(string bmsName)
     {
         foreach (var bms in bmsRegister)
             if (bms.Key.Name == bmsName)
@@ -158,7 +158,7 @@ public class Orchestrator
         pollinInterval = state;
         delayTask = Task.Delay(pollinInterval);
     }
-    internal IBMSInfo GetBatteryStatus(string namwe)
+    internal IBMSInfo? GetBatteryStatus(string namwe)
     {
         return GetBMSInfo(namwe);
     }
@@ -233,7 +233,7 @@ public class Orchestrator
             MqttPublisher.Instance.PublishInverterInformation(tmp);
             cachedInfo = tmp;
         }
-        catch(TimeoutException tex)
+        catch(TimeoutException)
         {
             // Resolve the timeout exception.
             ReconnectInverters();

@@ -8,7 +8,7 @@
 
     Dictionary<int, DateTime> SOCHistory = new Dictionary<int, DateTime>();
     List<BMSTask> activeTasks = new();
-    int emergencyStartSOC, emergencyStopSOC, ignoreSOC = int.MinValue, intervalInSeconds = 30;
+    int emergencyStartSOC, emergencyStopSOC, ignoreSOC = int.MinValue;
 
     public BatteryIntervention()
     {
