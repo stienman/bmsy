@@ -5,7 +5,7 @@ public class Orchestrator
 
     SimpleRest restApi = new();
     BatteryIntervention batteryManagementSystem = new();
-    MQTTSender mqtt = new();
+    
 
 
     List<IInverter> configuredInverters = new();
@@ -23,8 +23,9 @@ public class Orchestrator
         Console.WriteLine("\t\t\t=== BMSY === ");
 
         configuredBMSs = DeviceFactory.GetConfiguredBMS();
-        configuredInverters = DeviceFactory.GetConfiguredInverters();        
-        mqtt.PublishOnMainTopic("Started", $"I started at {DateTime.Now.ToShortTimeString()} on {DateTime.Now.ToShortDateString()}");
+        configuredInverters = DeviceFactory.GetConfiguredInverters();
+
+        MqttPublisher.Instance.PublishOnMainTopic("Started", $"I started at {DateTime.Now.ToShortTimeString()} on {DateTime.Now.ToShortDateString()}");
     }
 
     public void Start()
@@ -54,7 +55,7 @@ public class Orchestrator
             bmsRegister.Add(bms, e.BMSInfo);
         else bmsRegister[bms] = e.BMSInfo;
 
-        mqtt.PublishBMSInformation(bms, e.BMSInfo);
+        MqttPublisher.Instance.PublishBMSInformation(bms, e.BMSInfo);
         batteryManagementSystem.BatteryInfoReceived(bms, e.BMSInfo);
     }
 
@@ -99,7 +100,6 @@ public class Orchestrator
         else return 0;
     }
 
-
     private IBMSInfo GetBMSInfo(string bmsName)
     {
         foreach (var bms in bmsRegister)
@@ -119,13 +119,6 @@ public class Orchestrator
     {
         pollingAllowed = v;
         Log.instance.Information($"Polling is now { (v ? "activated" : "disabled")}");
-    }
-    internal List<string> GetInputRegister(int inputRegisterNr)
-    {
-        var list = new List<string>();
-        foreach (var inverter in configuredInverters)
-            list.Add($"Inverter {inverter.Name}, Input Register at address {inputRegisterNr} : {inverter.GetInputRegisterValueAtAddress(inputRegisterNr)}");
-        return list;
     }
 
     /// VOLTAGES ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -159,20 +152,12 @@ public class Orchestrator
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    internal List<string> GetHoldingRegister(int holdingRegisterNr)
-    {
-        var list = new List<string>();
-        foreach (var inverter in configuredInverters)
-            list.Add($"Inverter {inverter.Name}, Holding Register at address {holdingRegisterNr} : {inverter.GetHoldingRegisterValueAtAddress(holdingRegisterNr)}");
-        return list;
-    }
 
     internal void SetPollingInterval(int state)
     {
         pollinInterval = state;
         delayTask = Task.Delay(pollinInterval);
     }
-
     internal IBMSInfo GetBatteryStatus(string namwe)
     {
         return GetBMSInfo(namwe);
@@ -205,7 +190,6 @@ public class Orchestrator
         return -1;
     }
 
-
     private async void StartPolling()
     {
         while (true)
@@ -215,6 +199,7 @@ public class Orchestrator
             {
                 GatherInverterInfoAndPublish();
                 GatherBMSInfo();
+                EfficiencyTracker.Instance.PublishEfficiency(cachedInfo, bmsRegister.Values.ToList());
                 Log.instance.Pulse(); // This is just a visualization for the console window
             }
             else
@@ -225,11 +210,6 @@ public class Orchestrator
         }
     }
 
-    public void SendToMQTT(string topic, string message)
-    {
-        if (mqtt != null)
-            mqtt.PublishOnMainTopic(topic, message);
-    }
 
     void GatherBMSInfo()
     {
@@ -250,7 +230,7 @@ public class Orchestrator
             foreach (var inverter in configuredInverters)
                 tmp.Add(inverter.GetUpdate());
             // Send it off
-            mqtt.PublishInverterInformation(tmp);
+            MqttPublisher.Instance.PublishInverterInformation(tmp);
             cachedInfo = tmp;
         }
         catch(TimeoutException tex)
@@ -271,9 +251,7 @@ public class Orchestrator
     private void ReconnectInverters()
     {
         Log.instance.Warning("Reconnecting the inverters because there are timeouts.");
-
         pollingAllowed = false;
-
         configuredInverters.ForEach(inverter => inverter.Dispose());
         configuredInverters.Clear();
 
@@ -285,39 +263,7 @@ public class Orchestrator
         pollingAllowed = true;
     }
 
-    public List<RegisterEntry> GetAllHoldingRegistryEntries()
-    {
-        var results = new List<RegisterEntry>();
-        //foreach (var inv in inverters)
-        //{
-        var inv = configuredInverters[0];
-        for (int i = 0; i < 162; i++)
-        {
-            var res = inv.GetHoldingRegisterValueAtAddress(i);
-            results.Add(new() { Address = i.ToString(), Contents = res, InverterName = inv.Name });
-            Thread.Sleep(10);
-        }
-        //}
 
-        return results;
-    }
-
-    internal List<RegisterEntry> GetAllInputRegistryEntries()
-    {
-        var results = new List<RegisterEntry>();
-        //foreach (var inv in inverters)
-        //{
-        var inv = configuredInverters[0];
-        for (int i = 0; i < 381; i++)
-        {
-            var res = inv.GetInputRegisterValueAtAddress(i);
-            results.Add(new() { Address = i.ToString(), Contents = res, InverterName = inv.Name });
-            Thread.Sleep(10);
-        }
-        //}
-
-        return results;
-    }
 
     public IInverterInfo[] GetInverterStatuses()
     {
@@ -325,4 +271,60 @@ public class Orchestrator
             cachedInfo = new List<IInverterInfo>();
         return cachedInfo.ToArray();
     }
+
+
+    #region Abandoned or no longer needed
+
+    //public List<RegisterEntry> GetAllHoldingRegistryEntries()
+    //{
+    //    var results = new List<RegisterEntry>();
+    //    //foreach (var inv in inverters)
+    //    //{
+    //    var inv = configuredInverters[0];
+    //    for (int i = 0; i < 162; i++)
+    //    {
+    //        var res = inv.GetHoldingRegisterValueAtAddress(i);
+    //        results.Add(new() { Address = i.ToString(), Contents = res, InverterName = inv.Name });
+    //        Thread.Sleep(10);
+    //    }
+    //    //}
+
+    //    return results;
+    //}
+
+    //internal List<RegisterEntry> GetAllInputRegistryEntries()
+    //{
+    //    var results = new List<RegisterEntry>();
+    //    //foreach (var inv in inverters)
+    //    //{
+    //    var inv = configuredInverters[0];
+    //    for (int i = 0; i < 381; i++)
+    //    {
+    //        var res = inv.GetInputRegisterValueAtAddress(i);
+    //        results.Add(new() { Address = i.ToString(), Contents = res, InverterName = inv.Name });
+    //        Thread.Sleep(10);
+    //    }
+    //    //}
+
+    //    return results;
+    //}
+
+    //internal List<string> GetInputRegister(int inputRegisterNr)
+    //{
+    //    var list = new List<string>();
+    //    foreach (var inverter in configuredInverters)
+    //        list.Add($"Inverter {inverter.Name}, Input Register at address {inputRegisterNr} : {inverter.GetInputRegisterValueAtAddress(inputRegisterNr)}");
+    //    return list;
+    //}
+
+    //internal List<string> GetHoldingRegister(int holdingRegisterNr)
+    //{
+    //    var list = new List<string>();
+    //    foreach (var inverter in configuredInverters)
+    //        list.Add($"Inverter {inverter.Name}, Holding Register at address {holdingRegisterNr} : {inverter.GetHoldingRegisterValueAtAddress(holdingRegisterNr)}");
+    //    return list;
+    //}
+
+
+    #endregion
 }

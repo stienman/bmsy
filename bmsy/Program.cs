@@ -1,5 +1,4 @@
-﻿
-try
+﻿try
 {
     Orchestrator.instance.Start();
     new CancellationTokenSource().Token.WaitHandle.WaitOne(); 
