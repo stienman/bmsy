@@ -12,8 +12,11 @@ public class JBDRS485 : IBMS
 
     public event BMSDataReceivedEventHandler? BMSDataReceived;
 
+    int updateRequestsPending = 0;
+
     protected virtual void RaiseEvent()
     {
+        updateRequestsPending = 0;
         var handler = BMSDataReceived;
         handler?.Invoke(this, new BMSDataReceivedEventArgs() { BMSInfo = info });
     }
@@ -24,8 +27,6 @@ public class JBDRS485 : IBMS
 
     public bool Connect()
     {
-        //Console.WriteLine("BMS Is connecting ....");
-
         try
         {
             Log.instance.Information($"JBDRS485 {Name} connecting to {Port}...");
@@ -42,6 +43,12 @@ public class JBDRS485 : IBMS
             Log.instance.Error($"JBDRS485 {Name} error connecting: {ex.Message}");
            return false;
         }
+    }
+
+    private void disconnect()
+    {
+        serialPort.Close();
+        serialPort = null;
     }
 
     private void SerialPort_ErrorReceived(object sender, SerialErrorReceivedEventArgs e)
@@ -65,12 +72,23 @@ public class JBDRS485 : IBMS
         askingCellInfo = true;
         var array = new byte[] { 0xDD, 0xA5, 0x04, 0x00, 0xFF, 0xFC, 0x77 };
         serialPort.Write(array, 0, array.Length);
-    }    
+
+    }
 
     public bool GetUpdate()
     {
-        //Console.WriteLine("BMS:: GetUpdate()");
-        AskBasicInfo();
+        updateRequestsPending++;
+        if (updateRequestsPending > 5)
+        {
+            updateRequestsPending = 0;
+            disconnect();
+            Thread.Sleep(2000);
+            Connect();
+        }
+        else
+        {
+            AskBasicInfo();
+        }
         return true; // eh... dunno eigenlijk 
     }
 
@@ -132,6 +150,7 @@ public class JBDRS485 : IBMS
             info.CellAverage = Math.Round(cellAverage / numberOfCells, 4);
         }
         info.BMSName = Name;
+
         RaiseEvent();
     }
 
@@ -145,10 +164,8 @@ public class JBDRS485 : IBMS
         short highbyte = (byte)high;
         short lowbyte = (byte)low;
         highbyte <<= 8; //Left shift 8 bits,
-
-       return (highbyte | lowbyte);
+        return (highbyte | lowbyte);
     }
-
 
     private void ParsebasicInfo(int[] responseMsg)
     {

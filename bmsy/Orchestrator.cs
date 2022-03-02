@@ -31,21 +31,14 @@ public class Orchestrator
     public void Start()
     {
         // Connect and subscribe to events
-        configuredInverters.ForEach(x => connectInverter(x));
-        configuredBMSs.ForEach(x => connectBMS(x));  
+        configuredInverters.ForEach(x => x.Connect());
+        configuredBMSs.ForEach(x =>
+        {
+            x.BMSDataReceived += BMSDataReceived;
+            x.Connect();
+        });  
         // Everyhing is hooked up and we can start polling
         StartPolling();
-    }
-
-    void connectInverter(IInverter theInverter)
-    {
-        theInverter.Connect();
-    }
-
-    void connectBMS(IBMS theBMS)
-    {
-        theBMS.BMSDataReceived += BMSDataReceived;
-        theBMS.Connect();
     }
 
     private void BMSDataReceived(IBMS bms, BMSDataReceivedEventArgs e)
@@ -199,7 +192,6 @@ public class Orchestrator
             {
                 GatherInverterInfoAndPublish();
                 GatherBMSInfo();
-                EfficiencyTracker.Instance.PublishEfficiency(cachedInfo, bmsRegister.Values.ToList());
                 Log.instance.Pulse(); // This is just a visualization for the console window
             }
             else

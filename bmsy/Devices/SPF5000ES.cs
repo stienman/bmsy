@@ -73,49 +73,40 @@ public class SPF5000ES : IInverter
     }
     public bool SetOutputSource(OutputSourceSelection newOutputSource)
     {
-        Log.instance.Information($"Writing value {(int)newOutputSource} to register 1 on {Name}");
         return WriteToHoldingRegister(1, (int)newOutputSource);
     }
     public bool SetChargingSource(ChargingSourceSelection newCharchingSource)
     {
-        Log.instance.Information($"Writing value {(int)newCharchingSource} to register 2 on {Name}");
         return WriteToHoldingRegister(2, (int)newCharchingSource);
     }
     public bool SetChargingCurrent(int amps)
     {
-        Log.instance.Information($"Writing value {amps} to register 34 on {Name}");
         return WriteToHoldingRegister(34, amps);
 
     }
     public bool SetChargingCurrentAC(int amps)
     {
-        Log.instance.Information($"Writing value {amps} to register 38 on {Name}");
         return WriteToHoldingRegister(38, amps);
     }
 
     public bool SetBatteryCutOffVoltage(double value)
     {
-        Log.instance.Information($"Writing value {value} to register {BATT_CUTTOFF_VOLTAGE} on {Name}");
         return WriteToHoldingRegister(BATT_CUTTOFF_VOLTAGE, (int)(value * 10));
     }
     public bool SetBulkVoltage(double value)
     {
-        Log.instance.Information($"Writing value {value} to register 35 on {Name}");
         return WriteToHoldingRegister(REG_BULK_VOLTAGE, (int)(value * 10));
     }
     public bool SetFloatVoltage(double value)
     {
-        Log.instance.Information($"Writing value {value} to register 36 on {Name}");
         return WriteToHoldingRegister(REG_FLOAT_VOLTAGE, (int)(value * 10));
     }
     public bool SetBatteryLowBackToGrid(double value)
     {
-        Log.instance.Information($"Writing value {value} to register 37 on {Name}");
         return WriteToHoldingRegister(37, (int)(value * 10));
     }
     public bool SetBackToBattery(double value)
     {
-        Log.instance.Information($"Writing value {value} to register 95 on {Name}");
         return WriteToHoldingRegister(REG_BACK_TO_BATTERY, (int)(value * 10));
     }
 
